@@ -8,11 +8,16 @@ function AudioRecorder({ onAudioRecorded }) {
   const audioChunksRef = useRef([]);
 
   // Reset function to clear audio state
-  const resetAudio = () => {
+  const resetAudio = React.useCallback(() => {
+    if (mediaRecorderRef.current && recording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+    setRecording(false);
     setAudioUrl(null);
     audioChunksRef.current = [];
     onAudioRecorded(null);
-  };
+  }, [recording, onAudioRecorded]);
 
   const startRecording = async () => {
     try {
@@ -45,12 +50,12 @@ function AudioRecorder({ onAudioRecorded }) {
     mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
   };
 
-  // Expose resetAudio to parent through useEffect
+  // Watch for changes in audioUrl or recording state
   React.useEffect(() => {
-    if (!audioUrl) {
+    if (!audioUrl && !recording) {
       resetAudio();
     }
-  }, [audioUrl]);
+  }, [audioUrl, recording, resetAudio]);
 
   return (
     <div className="audio-recorder">
