@@ -7,6 +7,13 @@ function AudioRecorder({ onAudioRecorded }) {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
+  // Reset function to clear audio state
+  const resetAudio = () => {
+    setAudioUrl(null);
+    audioChunksRef.current = [];
+    onAudioRecorded(null);
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -37,6 +44,13 @@ function AudioRecorder({ onAudioRecorded }) {
     setRecording(false);
     mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
   };
+
+  // Expose resetAudio to parent through useEffect
+  React.useEffect(() => {
+    if (!audioUrl) {
+      resetAudio();
+    }
+  }, [audioUrl]);
 
   return (
     <div className="audio-recorder">
