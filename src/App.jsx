@@ -12,6 +12,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [showTimeout, setShowTimeout] = useState(false);
 
   // Generate a new session ID
   const generateSessionId = () => {
@@ -22,6 +23,29 @@ function App() {
     // Generate a new session ID when component mounts
     setSessionId(generateSessionId());
   }, []);
+
+  // Handle timeout notification
+  useEffect(() => {
+    let timeoutId;
+    if (isLoading) {
+      timeoutId = setTimeout(() => {
+        setShowTimeout(true);
+      }, 5000); // Show timeout message after 5 seconds
+    } else {
+      setShowTimeout(false);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isLoading]);
+
+  // Clear validation errors when both inputs are available
+  useEffect(() => {
+    if (image && audio && error === 'Please provide both image and audio before submitting.') {
+      setError(null);
+    }
+  }, [image, audio, error]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -53,6 +77,8 @@ function App() {
     try {
       setIsLoading(true);
       setError(null);
+      setResponse(null); // Clear any previous response
+      setShowTimeout(false); // Reset timeout
 
       const formData = new FormData();
       if (image) {
@@ -71,8 +97,6 @@ function App() {
         throw new Error('Failed to upload files. Please try again.');
       }
 
-      const data = await response.json();
-      
       // Transform the response to match our display format
       const transformedResponse = {
         sessionId: sessionId,
@@ -92,6 +116,7 @@ function App() {
       setError(err.message);
     } finally {
       setIsLoading(false);
+      setShowTimeout(false);
     }
   };
 
@@ -103,6 +128,7 @@ function App() {
     setSessionId(generateSessionId()); // Generate new session ID
     setResponse(null);
     setError(null);
+    setShowTimeout(false);
     // Reset shouldResetAudio after a brief delay
     setTimeout(() => setShouldResetAudio(false), 100);
   };
@@ -162,7 +188,7 @@ function App() {
             </div>
           </div>
 
-          {/* Validation message */}
+          {/* Validation message - only show when one input is missing */}
           {!isFormValid && (image || audio) && (
             <div className="validation-message">
               <p>⚠️ Please provide both image and audio to continue</p>
@@ -195,20 +221,38 @@ function App() {
           </div>
         </form>
 
-        <div className="response-section">
-          {isLoading && (
+        {/* Loading and Processing Section */}
+        {isLoading && (
+          <div className="processing-section">
             <div className="loading-container">
               <LoadingSpinner text="Processing your request..." />
+              <div className="session-info">
+                <p>Session ID: <span className="session-id-display">{sessionId}</span></p>
+              </div>
             </div>
-          )}
+            
+            {/* Timeout notification */}
+            {showTimeout && (
+              <div className="timeout-notification">
+                <p>⏰ Processing is taking longer than expected. This is normal for complex analysis.</p>
+                <p>Please wait while our AI system analyzes your issue...</p>
+              </div>
+            )}
+          </div>
+        )}
 
-          {error && (
+        {/* Error Section */}
+        {error && !isLoading && (
+          <div className="error-section">
             <div className="error-message">
               <p>❌ {error}</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {response && !isLoading && !error && (
+        {/* Response Section - Only show after processing is complete */}
+        {response && !isLoading && !error && (
+          <div className="response-section">
             <div className="response-content">
               <h3>🎯 Analysis Results</h3>
               <div className="response-grid">
@@ -253,8 +297,8 @@ function App() {
                 )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );
