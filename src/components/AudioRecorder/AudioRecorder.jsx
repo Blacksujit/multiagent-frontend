@@ -1,12 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './AudioRecorder.css';
 
-const AudioRecorder = ({ onAudioCapture }) => {
+const AudioRecorder = ({ onAudioCapture, shouldReset, disabled }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [error, setError] = useState(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+
+  // Handle reset from parent component
+  useEffect(() => {
+    if (shouldReset) {
+      setAudioBlob(null);
+      setError(null);
+      setIsRecording(false);
+      audioChunksRef.current = [];
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    }
+  }, [shouldReset]);
 
   const startRecording = async () => {
     try {
@@ -49,6 +62,12 @@ const AudioRecorder = ({ onAudioCapture }) => {
     setAudioBlob(null);
     setError(null);
     audioChunksRef.current = [];
+    onAudioCapture(null); // Notify parent that audio is cleared
+  };
+
+  const handleClearAudio = () => {
+    setAudioBlob(null);
+    onAudioCapture(null); // Notify parent that audio is cleared
   };
 
   return (
@@ -56,8 +75,8 @@ const AudioRecorder = ({ onAudioCapture }) => {
       {error ? (
         <div className="error-container">
           <p className="error-message">{error}</p>
-          <button className="retry-button" onClick={handleRetry}>
-            Retry
+          <button className="retry-button" onClick={handleRetry} disabled={disabled}>
+            🔄 Retry
           </button>
         </div>
       ) : (
@@ -65,8 +84,9 @@ const AudioRecorder = ({ onAudioCapture }) => {
           <button
             className={`record-button ${isRecording ? 'recording' : ''}`}
             onClick={isRecording ? stopRecording : startRecording}
+            disabled={disabled}
           >
-            {isRecording ? 'Stop Recording' : 'Start Recording'}
+            {isRecording ? '⏹️ Stop Recording' : '🎤 Start Recording'}
           </button>
           
           {audioBlob && (
@@ -76,6 +96,13 @@ const AudioRecorder = ({ onAudioCapture }) => {
                 controls
                 src={URL.createObjectURL(audioBlob)}
               />
+              <button 
+                className="clear-audio-button" 
+                onClick={handleClearAudio}
+                disabled={disabled}
+              >
+                🗑️ Clear Audio
+              </button>
             </div>
           )}
         </>
