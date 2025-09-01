@@ -413,6 +413,101 @@
   font-weight: 500;
 }
 
+/* AI Analysis Styles */
+.ocr-text {
+  background: linear-gradient(135deg, #f0f8ff, #e6f3ff);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #4299e1;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #2d3748;
+}
+
+.transcription {
+  background: linear-gradient(135deg, #fff5f5, #fed7d7);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #f56565;
+  line-height: 1.6;
+  color: #2d3748;
+}
+
+.sentiment-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  background: #4299e1;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recommendation-item {
+  background: linear-gradient(135deg, #f7fafc, #edf2f7);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recommendation-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-item.high {
+  border-left: 4px solid #f56565;
+  background: linear-gradient(135deg, #fff5f5, #fed7d7);
+}
+
+.recommendation-item.medium {
+  border-left: 4px solid #ed8936;
+  background: linear-gradient(135deg, #fffaf0, #feebc8);
+}
+
+.recommendation-item.low {
+  border-left: 4px solid #48bb78;
+  background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+}
+
+.recommendation-item h5 {
+  margin: 0 0 0.8rem 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.recommendation-item p {
+  margin: 0 0 1rem 0;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.recommendation-meta {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.type-badge {
+  padding: 0.3rem 0.8rem;
+  background: #718096;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
 @media (max-width: 768px) {
   .input-section {
     grid-template-columns: 1fr;
@@ -434,5 +529,11 @@
   .error-section,
   .response-section {
     padding: 1.5rem;
+  }
+  
+  .recommendation-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }

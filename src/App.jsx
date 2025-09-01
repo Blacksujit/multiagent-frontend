@@ -97,18 +97,26 @@ function App() {
         throw new Error('Failed to upload files. Please try again.');
       }
 
+      const data = await response.json();
+      
       // Transform the response to match our display format
       const transformedResponse = {
         sessionId: sessionId,
-        problemType: 'Technical Issue',
-        priority: 'High',
-        description: 'Your issue has been successfully uploaded and is being analyzed by our AI system.',
-        suggestions: [
+        problemType: data.content_type || 'Technical Issue',
+        priority: data.urgency_level || 'Medium',
+        description: data.message || 'Analysis completed successfully.',
+        suggestions: data.recommendations?.map(rec => rec.content) || [
           'Check your system requirements',
           'Verify all connections',
           'Ensure proper configuration'
         ],
-        nextSteps: 'Our team will analyze your issue and get back to you shortly.'
+        nextSteps: 'Our team will analyze your issue and get back to you shortly.',
+        // New AI analysis fields
+        ocrText: data.ocr_text || '',
+        transcription: data.transcription || '',
+        sentiment: data.sentiment || '',
+        recommendations: data.recommendations || [],
+        processingTime: data.processing_time || 0
       };
       setResponse(transformedResponse);
     } catch (err) {
@@ -270,10 +278,60 @@ function App() {
                   <h4>🆔 Reference ID</h4>
                   <p className="session-id">{response.sessionId}</p>
                 </div>
+                <div className="response-item">
+                  <h4>⏱️ Processing Time</h4>
+                  <p>{response.processingTime ? `${response.processingTime.toFixed(2)}s` : 'N/A'}</p>
+                </div>
                 <div className="response-item full-width">
                   <h4>📝 Description</h4>
                   <p className="description">{response.description || 'Analysis in progress...'}</p>
                 </div>
+                
+                {/* AI Analysis Results */}
+                {response.ocrText && (
+                  <div className="response-item full-width">
+                    <h4>🔍 Extracted Text (OCR)</h4>
+                    <div className="ocr-text">
+                      <p>{response.ocrText}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {response.transcription && (
+                  <div className="response-item full-width">
+                    <h4>🎤 Voice Transcription</h4>
+                    <div className="transcription">
+                      <p>{response.transcription}</p>
+                      {response.sentiment && (
+                        <span className="sentiment-badge">
+                          Sentiment: {response.sentiment}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Detailed Recommendations */}
+                {response.recommendations && response.recommendations.length > 0 && (
+                  <div className="response-item full-width">
+                    <h4>💡 AI Recommendations</h4>
+                    <div className="recommendations-list">
+                      {response.recommendations.map((rec, index) => (
+                        <div key={index} className={`recommendation-item ${rec.priority}`}>
+                          <h5>{rec.title}</h5>
+                          <p>{rec.content}</p>
+                          <div className="recommendation-meta">
+                            <span className="type-badge">{rec.type}</span>
+                            <span className={`priority-badge ${rec.priority}`}>
+                              {rec.priority}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 {response.suggestions && (
                   <div className="response-item full-width">
                     <h4>💡 Suggested Solutions</h4>
