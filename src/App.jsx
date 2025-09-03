@@ -116,7 +116,8 @@ function App() {
         transcription: data.transcription || '',
         sentiment: data.sentiment || '',
         recommendations: data.recommendations || [],
-        processingTime: data.processing_time || 0
+        processingTime: data.processing_time || 0,
+        structured: data.structured || {}
       };
       setResponse(transformedResponse);
     } catch (err) {
@@ -288,6 +289,22 @@ function App() {
                 </div>
                 
                 {/* AI Analysis Results */}
+                {process.env.REACT_APP_SHOW_STRUCTURED === 'true' && response.structured && (
+                  <div className="response-item full-width">
+                    <h4>📑 Detected Fields</h4>
+                    <div className="structured-fields">
+                      {response.structured.stop_code && (
+                        <div className="chip">STOP CODE: {response.structured.stop_code}</div>
+                      )}
+                      {response.structured.error_code && (
+                        <div className="chip">ERROR CODE: {response.structured.error_code}</div>
+                      )}
+                      {response.structured.progress_percent && (
+                        <div className="chip">PROGRESS: {response.structured.progress_percent}%</div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {response.ocrText && (
                   <div className="response-item full-width">
                     <h4>🔍 Extracted Text (OCR)</h4>
